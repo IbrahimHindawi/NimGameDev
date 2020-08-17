@@ -11,4 +11,5 @@ bin           = @["NimGameDev"]
 
 # Dependencies
 
-requires "nim >= 1.2.6"
+requires "nim >= 1.2.0"
+requires "sdl2_nim"
