@@ -1,46 +1,5 @@
-# ex101_init.nim
-# ==============
-# BASICS / Initialization and shutdown
-# ------------------------------------
-
-
 import sdl2/sdl
-
-type
-  App* = object
-    window:sdl.Window
-    renderer:sdl.Renderer
-    game_is_running:bool
-
-proc initialize_system():void =
-  if sdl.init(sdl.INIT_EVERYTHING) != 0:
-    echo "Failed to initialize system!", sdl.getError()
-
-proc initialize_window(): sdl.Window =
-  var window:sdl.Window = sdl.createWindow(
-    "Ibras",
-    sdl.WINDOWPOS_CENTERED,
-    sdl.WINDOWPOS_CENTERED,
-    640,
-    480,
-    sdl.WINDOW_BORDERLESS)
-  if window == nil:
-    echo "Error, could not initialize window!", sdl.getError()
-  return window
-  
-proc initialize_renderer(window:sdl.Window): sdl.Renderer =
-  var renderer:sdl.Renderer = sdl.createRenderer(
-    window,
-    -1,
-    sdl.RENDERER_ACCELERATED or sdl.RENDERER_PRESENTVSYNC)
-  if renderer == nil:
-    echo "Error, could not initialize renderer!", sdl.getError()
-  return renderer
-
-proc destroy_system(window:sdl.Window, renderer:sdl.Renderer): void =
-  sdl.destroyRenderer(window)
-  sdl.destroyWindow(renderer)
-  sdl.quit()
+import GameSys
 
 proc process_input(game_is_running:var bool): void =
   var event: sdl.Event
@@ -65,8 +24,8 @@ proc render(renderer:sdl.Renderer): void =
   discard renderer.setRenderDrawColor(1,1,1,0xFF)
   discard renderer.renderClear();
 
-  discard renderer.setRenderDrawColor(32,32,32,0xFF)
-  var ball=sdl.Rect(x:0, y:0, w:32, h:32)
+  discard renderer.setRenderDrawColor(64,64,64,0xFF)
+  var ball=sdl.Rect(x:150, y:150, w:32, h:32)
   discard sdl.renderFillRect(renderer, addr(ball))
 
   renderer.renderPresent();
@@ -74,9 +33,9 @@ proc render(renderer:sdl.Renderer): void =
 
 proc main():void =
   var app:App = App(window: nil, renderer: nil)
-  initialize_system()
-  app.window = initialize_window()
-  app.renderer = initialize_renderer(app.window)
+  GameSys.initialize_system()
+  app.window = GameSys.initialize_window()
+  app.renderer = GameSys.initialize_renderer(app.window)
   app.renderer.renderPresent()
   app.game_is_running = true
 
@@ -87,7 +46,7 @@ proc main():void =
     update()
     render(app.renderer)
   #sdl.delay(2000)
-  destroy_system(app.window, app.renderer)
+  GameSys.destroy_system(app.window, app.renderer)
 
 
 when isMainModule:
