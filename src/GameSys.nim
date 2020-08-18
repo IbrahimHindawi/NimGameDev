@@ -1,5 +1,14 @@
 import sdl2/sdl
 
+let
+  SCR_HEIGHT:int = 480
+  SCR_WIDTH:int = 640
+  FPS:int = 30
+  FRAME_TARGET_TIME*:float = 1000/FPS
+
+var
+  last_frame_time*:float
+
 type
   App* = object
     window*:sdl.Window
@@ -15,8 +24,8 @@ proc initialize_window*(): sdl.Window =
     "Ibras",
     sdl.WINDOWPOS_CENTERED,
     sdl.WINDOWPOS_CENTERED,
-    640,
-    480,
+    SCR_WIDTH,
+    SCR_HEIGHT,
     sdl.WINDOW_BORDERLESS)
   if window == nil:
     echo "Error, could not initialize window!", sdl.getError()

@@ -7,7 +7,7 @@ type
     y*: int
 
   Entity* = ref object
-    rect:sdl.Rect
+    rect*:sdl.Rect
     
 proc newEntity(x, y, w, h:int):Entity=
   Entity(rect: sdl.Rect(sdl.Rect(x:x, y:y, w:w, h:h)))
@@ -32,6 +32,10 @@ proc process_input(game_is_running:var bool): void =
       discard
 
 proc update(entity: var Entity): void =
+  while (not sdl.ticksPassed(float(sdl.getTicks()), GameSys.last_frame_time + GameSys.FRAME_TARGET_TIME) ):
+    discard
+  GameSys.last_frame_time = float(sdl.getTicks())
+
   entity.rect.x += 1
   entity.rect.y += 1
 
@@ -58,14 +62,23 @@ proc render (renderer:sdl.Renderer, entity:var Entity): void =
   renderer.renderPresent()
 
 proc main():void =
+#[                                ]
+______INIT_________________________
+[                                 ]#                                
   var app:App = App(window: nil, renderer: nil)
   GameSys.initialize_system()
   app.window = GameSys.initialize_window()
   app.renderer = GameSys.initialize_renderer(app.window)
   app.renderer.renderPresent()
 
+#[                                ]
+______SETUP________________________
+[                                ]#   
   var entity = setup()
 
+#[                                ]
+______LOOP_________________________
+[                                ]#   
   app.game_is_running = true
   while app.game_is_running:
     process_input(app.game_is_running)
