@@ -1,22 +1,35 @@
 import sdl2/sdl
 import GameSys
+import math
 
 type
   Vector2* = object
-    x*: int
-    y*: int
+    x*: float
+    y*: float
+
+  Direction* = enum
+    None, Left, Right
 
   Entity* = ref object
     rect*:sdl.Rect
+    dire*:Direction
+    speed*:float
+
     
-proc newEntity(x, y, w, h:int):Entity=
-  Entity(rect: sdl.Rect(sdl.Rect(x:x, y:y, w:w, h:h)))
+proc newEntity(posx, posy, w, h, speed:float):Entity=
+  Entity(rect: sdl.Rect(x:int(posx), y:int(posy), w:int(w), h:int(h)),
+        dire:None,
+        speed:speed)
+
+proc updateEntity(entity:Entity, x, y:float)=
+  entity.rect.x += int(x)
+  entity.rect.y += int(y)
 
 proc setup():Entity=
-  var entity:Entity = newEntity(32, 32, 32, 32)
+  var entity:Entity = newEntity(GameSys.SCR_WIDTH/2-32, GameSys.SCR_HEIGHT/1-16, 64, 16, 120)
   entity
 
-proc process_input(game_is_running:var bool): void =
+proc process_input(game_is_running:var bool, entity:Entity) =
   var event: sdl.Event
   discard sdl.pollEvent(addr(event))
   case event.kind:
@@ -26,21 +39,40 @@ proc process_input(game_is_running:var bool): void =
       case event.key.keysym.sym:
         of sdl.K_ESCAPE:
           game_is_running = false
+        of sdl.K_LEFT:
+          entity.dire = Left
+          discard
+        of sdl.K_RIGHT:
+          entity.dire = Right
+          discard
+        else:
+          discard
+    of sdl.KEYUP:
+      case event.key.keysym.sym:
+        of sdl.K_LEFT:
+          entity.dire = None
+        of sdl.K_RIGHT:
+          entity.dire = None
         else:
           discard
     else:
       discard
 
-proc update(entity: var Entity): void =
+proc update(entity: var Entity) =
   while (not sdl.ticksPassed(float(sdl.getTicks()), GameSys.last_frame_time + GameSys.FRAME_TARGET_TIME) ):
     discard
+  var delta_time:float = (float(sdl.getTicks()) - GameSys.last_frame_time) / 1000.0
   GameSys.last_frame_time = float(sdl.getTicks())
+  case entity.dire:
+    of Left:
+      updateEntity(entity, -entity.speed * delta_time, 0 )
+    of Right:
+      updateEntity(entity, entity.speed * delta_time, 0 )
+    of None:
+      updateEntity(entity, 0, 0 )
 
-  entity.rect.x += 1
-  entity.rect.y += 1
 
-
-proc old_render(renderer:sdl.Renderer): void =
+proc old_render(renderer:sdl.Renderer) =
   discard renderer.setRenderDrawColor(1,1,1,0xFF)
   discard renderer.renderClear();
   discard renderer.setRenderDrawColor(64,64,64,0xFF)
@@ -48,20 +80,20 @@ proc old_render(renderer:sdl.Renderer): void =
   discard sdl.renderFillRect(renderer, addr(ball))
   renderer.renderPresent();
 
-proc render_background(renderer:sdl.Renderer):void = 
-  discard renderer.setRenderDrawColor(0,64,0,0xFF)
+proc render_background(renderer:sdl.Renderer) = 
+  discard renderer.setRenderDrawColor(5,5,5,0xFF)
   discard renderer.renderClear();
 
-proc render_entity(renderer:sdl.Renderer, entity:var Entity):void =
-  discard renderer.setRenderDrawColor(64,0,64,0xFF)
+proc render_entity(renderer:sdl.Renderer, entity:var Entity) =
+  discard renderer.setRenderDrawColor(255,255,255,0xFF)
   discard sdl.renderFillRect(renderer, addr(entity.rect))
 
-proc render (renderer:sdl.Renderer, entity:var Entity): void =
+proc render (renderer:sdl.Renderer, entity:var Entity) =
   render_background(renderer)
   render_entity(renderer, entity)
   renderer.renderPresent()
 
-proc main():void =
+proc main() =
 #[                                ]
 ______INIT_________________________
 [                                 ]#                                
@@ -74,14 +106,14 @@ ______INIT_________________________
 #[                                ]
 ______SETUP________________________
 [                                ]#   
-  var entity = setup()
+  var entity:Entity = setup()
 
 #[                                ]
 ______LOOP_________________________
 [                                ]#   
   app.game_is_running = true
   while app.game_is_running:
-    process_input(app.game_is_running)
+    process_input(app.game_is_running, entity)
     update(entity)
     #echo entity.rect.x
     render(app.renderer, entity)

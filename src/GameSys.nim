@@ -1,8 +1,8 @@
 import sdl2/sdl
 
 let
-  SCR_HEIGHT:int = 480
-  SCR_WIDTH:int = 640
+  SCR_HEIGHT*:int = 480
+  SCR_WIDTH*:int = 640
   FPS:int = 30
   FRAME_TARGET_TIME*:float = 1000/FPS
 
