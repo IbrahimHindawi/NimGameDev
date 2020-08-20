@@ -24,6 +24,13 @@ proc newEntity(posx, posy, w, h, speed:float):Entity=
 proc updateEntity(entity:Entity, x, y:float)=
   entity.rect.x += int(x)
   entity.rect.y += int(y)
+  if entity.rect.x > SCR_WIDTH-entity.rect.w:
+    entity.rect.x = SCR_WIDTH-entity.rect.w
+  if entity.rect.x < 0:
+    entity.rect.x = 0
+    
+    
+  
 
 proc setup():Entity=
   var entity:Entity = newEntity(GameSys.SCR_WIDTH/2-32, GameSys.SCR_HEIGHT/1-16, 64, 16, 120)
