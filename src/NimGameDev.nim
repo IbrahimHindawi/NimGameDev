@@ -1,40 +1,12 @@
 import sdl2/sdl
 import GameSys
 import math
+import Entity
 
-type
-  Vector2* = object
-    x*: float
-    y*: float
 
-  Direction* = enum
-    None, Left, Right
-
-  Entity* = ref object
-    rect*:sdl.Rect
-    dire*:Direction
-    speed*:float
-
-    
-proc newEntity(posx, posy, w, h, speed:float):Entity=
-  Entity(rect: sdl.Rect(x:int(posx), y:int(posy), w:int(w), h:int(h)),
-        dire:None,
-        speed:speed)
-
-proc updateEntity(entity:Entity, x, y:float)=
-  entity.rect.x += int(x)
-  entity.rect.y += int(y)
-  if entity.rect.x > SCR_WIDTH-entity.rect.w:
-    entity.rect.x = SCR_WIDTH-entity.rect.w
-  if entity.rect.x < 0:
-    entity.rect.x = 0
-    
-    
-  
-
-proc setup():Entity=
-  var entity:Entity = newEntity(GameSys.SCR_WIDTH/2-32, GameSys.SCR_HEIGHT/1-16, 64, 16, 120)
-  entity
+# proc setup():Entity=
+#   var entity:Entity = newEntity(GameSys.SCR_WIDTH/2-32, GameSys.SCR_HEIGHT/1-16, 64, 16, 120, Vec)
+#   entity
 
 proc process_input(game_is_running:var bool, entity:Entity) =
   var event: sdl.Event
@@ -65,7 +37,7 @@ proc process_input(game_is_running:var bool, entity:Entity) =
     else:
       discard
 
-proc update(entity: var Entity) =
+proc update_paddle(entity: var Entity) =
   while (not sdl.ticksPassed(float(sdl.getTicks()), GameSys.last_frame_time + GameSys.FRAME_TARGET_TIME) ):
     discard
   var delta_time:float = (float(sdl.getTicks()) - GameSys.last_frame_time) / 1000.0
@@ -77,6 +49,17 @@ proc update(entity: var Entity) =
       updateEntity(entity, entity.speed * delta_time, 0 )
     of None:
       updateEntity(entity, 0, 0 )
+
+proc update_ball(entity: var Entity) =
+  
+  while (not sdl.ticksPassed(float(sdl.getTicks()), GameSys.last_frame_time + GameSys.FRAME_TARGET_TIME) ):
+    discard
+  var delta_time:float = (float(sdl.getTicks()) - GameSys.last_frame_time) / 1000.0
+  GameSys.last_frame_time = float(sdl.getTicks())
+
+  updatePhysics(entity, entity.velo.x * delta_time * entity.speed, entity.velo.y * delta_time * entity.speed)
+  checkBorders(entity)
+
 
 
 proc old_render(renderer:sdl.Renderer) =
@@ -108,22 +91,47 @@ ______INIT_________________________
   GameSys.initialize_system()
   app.window = GameSys.initialize_window()
   app.renderer = GameSys.initialize_renderer(app.window)
-  app.renderer.renderPresent()
+  #app.renderer.renderPresent()
 
 #[                                ]
 ______SETUP________________________
 [                                ]#   
-  var entity:Entity = setup()
+  var paddle:Entity = newEntity(GameSys.SCR_WIDTH/2-64/2, GameSys.SCR_HEIGHT/1-16,
+                                64, 16,
+                                900,
+                                Vector2(x:0, y:0))
+
+  var ball  :Entity = newEntity(GameSys.SCR_HEIGHT/2, GameSys.SCR_WIDTH/2,
+                                10, 10,
+                                240,
+                                Vector2(x: 1, y: 1))
+                            
 
 #[                                ]
 ______LOOP_________________________
 [                                ]#   
   app.game_is_running = true
   while app.game_is_running:
-    process_input(app.game_is_running, entity)
-    update(entity)
-    #echo entity.rect.x
-    render(app.renderer, entity)
+    process_input(app.game_is_running, paddle)
+
+
+    update_paddle(paddle)
+    update_ball(ball)
+
+    # if collisionDetect(paddle, ball):
+    #   ball.velo.y *= -1
+    if collisionDetectTop(paddle, ball):
+      ball.velo.y *= -1
+    if collisionDetectLeft(paddle, ball):
+      ball.velo.x *= -1
+    if collisionDetectRight(paddle, ball):
+      ball.velo.x *= -1
+
+
+    render_background(app.renderer)
+    render_entity(app.renderer, paddle)
+    render_entity(app.renderer, ball)
+    app.renderer.renderPresent()
   
   GameSys.destroy_system(app.window, app.renderer)
 
