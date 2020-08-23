@@ -1,12 +1,14 @@
 import sdl2/sdl
 import GameSys
-import math
+import Collision
 import Entity
 
 
 # proc setup():Entity=
 #   var entity:Entity = newEntity(GameSys.SCR_WIDTH/2-32, GameSys.SCR_HEIGHT/1-16, 64, 16, 120, Vec)
 #   entity
+
+
 
 proc process_input(game_is_running:var bool, entity:Entity) =
   var event: sdl.Event
@@ -57,7 +59,7 @@ proc update_ball(entity: var Entity) =
   var delta_time:float = (float(sdl.getTicks()) - GameSys.last_frame_time) / 1000.0
   GameSys.last_frame_time = float(sdl.getTicks())
 
-  bounceBorder(entity, entity.velo.x * delta_time * entity.speed, entity.velo.y * delta_time * entity.speed)
+  moveBall(entity, entity.velo.x * delta_time * entity.speed, entity.velo.y * delta_time * entity.speed)
   checkBorders(entity)
 
 
@@ -76,7 +78,7 @@ proc render_background(renderer:sdl.Renderer) =
 
 proc render_entity(renderer:sdl.Renderer, entity:var Entity) =
   discard renderer.setRenderDrawColor(255,255,255,0xFF)
-  discard sdl.renderFillRect(renderer, addr(entity.rect))
+  discard sdl.renderFillRectF(renderer, addr(entity.rect))
 
 proc render (renderer:sdl.Renderer, entity:var Entity) =
   render_background(renderer)
@@ -102,14 +104,35 @@ ______SETUP________________________
                                 Vector2(x:0, y:0))
 
   var ball  :Entity = newEntity(GameSys.SCR_HEIGHT/2, GameSys.SCR_WIDTH/2,
-                                10, 10,
+                                5, 5,
                                 240,
                                 Vector2(x: 1, y: 1))
 
-  var blck  :Entity = newEntity(200, 300,
-                                32, 16,
-                                0,
-                                Vector2(x: 0, y: 0))                                
+  # var blck  :Entity = newEntity(200, 300,
+  #                               32, 16,
+  #                               0,
+  #                               Vector2(x: 0, y: 0))
+
+  var 
+    startX:float = SCR_WIDTH/8
+    startY:float = SCR_HEIGHT/8
+    nWidth:int   = 12
+    #blocks:seq[Entity]
+    blocks:array[12, Entity]
+
+  
+  # for i in 0 .. nWidth:
+  #   var blck = newEntity(startX+float(i*36), startY,
+  #                   32, 16,
+  #                   0,
+  #                   Vector2(x:0, y:0))
+  #   echo blck.rect.x + blck.rect.y                 
+  #   blocks.add(blck)
+  for i in 0 ..< nWidth:
+    blocks[i] = newEntity(startX+float(i*36), startY,
+                    32, 16,
+                    0,
+                    Vector2(x:0, y:0))
                             
 
 #[                                ]
@@ -121,14 +144,21 @@ ______LOOP_________________________
 
     update_paddle(paddle)
     update_ball(ball)
-    
+
     resolvePaddleBallCollision(paddle, ball)
-    resolveBlockBallCollision(blck, ball)
+    #resolveBlockBallCollision(blck, ball)
+    for i in 0 ..< nWidth:
+      resolveBlockBallCollision(blocks[i], ball)
+        #blocks[i] = nil
+      #destroyEntity(blocks[i])
+      #blocks[i]=Entity.none
 
     render_background(app.renderer)
     render_entity(app.renderer, paddle)
     render_entity(app.renderer, ball)
-    render_entity(app.renderer, blck)
+    #render_entity(app.renderer, blck)
+    for i in 0 ..< nWidth:
+      render_entity(app.renderer, blocks[i])
     app.renderer.renderPresent()
   
   GameSys.destroy_system(app.window, app.renderer)

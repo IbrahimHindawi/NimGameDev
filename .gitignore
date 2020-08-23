@@ -2,3 +2,5 @@ nimcache/
 nimblecache/
 htmldocs/
 *.exe
+pkg/*.dll
+*.7z
