@@ -57,7 +57,7 @@ proc update_ball(entity: var Entity) =
   var delta_time:float = (float(sdl.getTicks()) - GameSys.last_frame_time) / 1000.0
   GameSys.last_frame_time = float(sdl.getTicks())
 
-  updatePhysics(entity, entity.velo.x * delta_time * entity.speed, entity.velo.y * delta_time * entity.speed)
+  bounceBorder(entity, entity.velo.x * delta_time * entity.speed, entity.velo.y * delta_time * entity.speed)
   checkBorders(entity)
 
 
@@ -96,8 +96,8 @@ ______INIT_________________________
 #[                                ]
 ______SETUP________________________
 [                                ]#   
-  var paddle:Entity = newEntity(GameSys.SCR_WIDTH/2-64/2, GameSys.SCR_HEIGHT/1-16,
-                                64, 16,
+  var paddle:Entity = newEntity(GameSys.SCR_WIDTH/2-64/2, GameSys.SCR_HEIGHT/1-8,
+                                64, 8,
                                 900,
                                 Vector2(x:0, y:0))
 
@@ -105,6 +105,11 @@ ______SETUP________________________
                                 10, 10,
                                 240,
                                 Vector2(x: 1, y: 1))
+
+  var blck  :Entity = newEntity(200, 300,
+                                32, 16,
+                                0,
+                                Vector2(x: 0, y: 0))                                
                             
 
 #[                                ]
@@ -114,23 +119,16 @@ ______LOOP_________________________
   while app.game_is_running:
     process_input(app.game_is_running, paddle)
 
-
     update_paddle(paddle)
     update_ball(ball)
-
-    # if collisionDetect(paddle, ball):
-    #   ball.velo.y *= -1
-    if collisionDetectTop(paddle, ball):
-      ball.velo.y *= -1
-    if collisionDetectLeft(paddle, ball):
-      ball.velo.x *= -1
-    if collisionDetectRight(paddle, ball):
-      ball.velo.x *= -1
-
+    
+    resolvePaddleBallCollision(paddle, ball)
+    resolveBlockBallCollision(blck, ball)
 
     render_background(app.renderer)
     render_entity(app.renderer, paddle)
     render_entity(app.renderer, ball)
+    render_entity(app.renderer, blck)
     app.renderer.renderPresent()
   
   GameSys.destroy_system(app.window, app.renderer)
