@@ -1,3 +1,6 @@
+import sequtils
+import sugar
+
 import sdl2/sdl
 import GameSys
 import Collision
@@ -105,19 +108,47 @@ ______SETUP________________________
   var 
     startX:float = SCR_WIDTH/8
     startY:float = SCR_HEIGHT/8
-    nWidth:int   = 12
+    nWidth:int   = 5
     blocks:seq[Entity]
-
-  
+    coords:seq[(int,int)]
+    
   for i in 0 .. nWidth:
-    var blck = newEntity(startX+float(i*36), startY,
-                    32, 16,
-                    0,
-                    Vector2(x:0, y:0))             
+    for j in 0 .. nWidth:
+      coords.add( (i,j) )
+      #var blck = newEntity(startX+float(i*2), startY+float(j*8),
+      #[
+      var blck = newEntity(i.float * 20, j.float * 20,
+                      32, 16,
+                      0,
+                      Vector2(x:0, y:0))             
+      blocks.add(blck)]#
+
+  #echo blocks.len
+
+  for item in 0 .. coords.len-1:
+    echo coords[item][1]
+    var blck = newEntity(coords[item][0].float * 20, coords[item][1].float * 20,
+                      32, 16,
+                      0,
+                      Vector2(x:0, y:0))             
     blocks.add(blck)
 
-
-
+  # for blck in blocks:
+  #   echo  "( x = ", blck.rect.x, ", y = ", blck.rect.y, ")"
+#[
+  var xcords = @[0, 1, 2, 3, 4, 5]
+  var coords = map(xcords, (x:int) -> (int, int) => (x*3,x*3))
+  #echo ycords
+  echo coords[0][0].float
+  for blck in 0 .. nWidth:
+    var counter = 0
+    var blck = newEntity(coords[counter][0].float, coords[counter][1].float,
+                32, 16,
+                0,
+                Vector2(x:0, y:0)) 
+    blocks.add(blck)
+    counter += 1
+]#
 #[                                ]
 ______LOOP_________________________
 [                                ]#   
