@@ -1,5 +1,6 @@
 import Entity
 import GameSys
+import sdl2/sdl
 #[                                ]
 ______COLLISION____________________
 [                                ]#  
@@ -32,8 +33,8 @@ proc collisionDetectTop*(entityA: Entity, entityB: Entity): bool =
 proc collisionDetectLeft*(entityA: Entity, entityB: Entity): bool =
   if entityB.rect.x + entityB.rect.w > entityA.rect.x and
     entityB.rect.x < entityA.rect.x + 1 and
-    entityB.rect.y < entityA.rect.y + entityA.rect.h + 1 and
-    entityB.rect.y + entityB.rect.h  > entityA.rect.y - 1 :
+    entityB.rect.y < entityA.rect.y + entityA.rect.h - 1 and
+    entityB.rect.y + entityB.rect.h  > entityA.rect.y + 1 :
     echo "Left"
     return true
 
