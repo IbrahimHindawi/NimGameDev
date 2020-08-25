@@ -108,7 +108,7 @@ ______SETUP________________________
   var 
     startX:float = SCR_WIDTH/8
     startY:float = SCR_HEIGHT/8
-    nWidth:int   = 5
+    nWidth:int   = 11
     blocks:seq[Entity]
     coords:seq[(int,int)]
     
@@ -127,7 +127,7 @@ ______SETUP________________________
 
   for item in 0 .. coords.len-1:
     echo coords[item][1]
-    var blck = newEntity(coords[item][0].float * 20, coords[item][1].float * 20,
+    var blck = newEntity(startX + coords[item][0].float * 40, startY + coords[item][1].float * 20,
                       32, 16,
                       0,
                       Vector2(x:0, y:0))             
@@ -160,14 +160,14 @@ ______LOOP_________________________
     update(paddle, ball)
 
     resolvePaddleBallCollision(paddle, ball)
-    for i in 0 .. nWidth:
+    for i in 0 .. blocks.len-1:
       resolveBlockBallCollision(blocks[i], ball)
     #resolveBlockBallCollision(luke, ball)
 
     render_background(app.renderer)
     render_entity(app.renderer, paddle)
     render_entity(app.renderer, ball)
-    for i in 0 .. nWidth:
+    for i in 0 .. blocks.len-1:
       render_entity(app.renderer, blocks[i])
     #render_entity(app.renderer, luke)
     app.renderer.renderPresent()
